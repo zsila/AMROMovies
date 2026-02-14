@@ -1,0 +1,12 @@
+package com.sila.amro.data.network.dto
+import com.google.gson.annotations.SerializedName
+
+data class MovieDto(
+    val id: Int,
+    val title: String,
+    @SerializedName("poster_path") val posterPath: String?,
+    @SerializedName("genre_ids") val genreIds: List<Int>,
+    val popularity: Double,
+    @SerializedName("release_date") val releaseDate: String?
+)
+
