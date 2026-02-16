@@ -13,6 +13,21 @@
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
+      <SelectionState runConfigName="errorState_showsMessage_andRetryInvokesCallback()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="emptyVisibleMovies_showsEmptyMessage_andClearFiltersCallsOnSelectGenreNull()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="clickingSortChips_callsOnSelectSortField_andToggleCallsOnToggleSortOrder()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="selectingGenreChip_callsOnSelectGenre_withGenreId_andAllCallsNull()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="clickingMovie_callsOnMovieClick_withMovieId()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
     </selectionStates>
   </component>
 </project>

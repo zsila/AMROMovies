@@ -29,7 +29,7 @@ class GetGenresUseCaseTest {
             Genre(id = 2, name = "Genre2")
         )
 
-        val result = fakeRepository.getGenres()
+        val result = useCase()
 
         assertEquals(genres, result)
 

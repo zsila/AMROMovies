@@ -35,7 +35,8 @@ fun MovieRow(
             .testTag("movie_item_${movie.id}")
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .testTag("movie_row_${movie.id}"),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         AsyncImage(

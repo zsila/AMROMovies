@@ -20,7 +20,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -28,12 +27,14 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.sila.amro.BuildConfig
 import com.sila.amro.R
 import com.sila.amro.presentation.components.ErrorContent
 import com.sila.amro.presentation.components.LoadingContent
 import java.text.NumberFormat
+import androidx.core.net.toUri
 
 
 @Composable
@@ -42,7 +43,7 @@ fun MovieDetailScreen(
     onBack: () -> Unit,
     viewModel: MovieDetailViewModel = hiltViewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val ctx = LocalContext.current
 
     MovieDetailScreenContent(
@@ -52,7 +53,7 @@ fun MovieDetailScreen(
         onRetry = viewModel::reload,
         onOpenImdb = { imdbId ->
             val url = "https://www.imdb.com/title/$imdbId/"
-            ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+            ctx.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
         }
     )
 
@@ -83,18 +84,24 @@ internal fun MovieDetailScreenContent(
     onOpenImdb: (String) -> Unit
 ) {
     when {
-        state.isLoading -> LoadingContent(modifier = Modifier.padding(contentPadding))
+        state.isLoading -> LoadingContent(modifier = Modifier
+            .padding(contentPadding)
+            .testTag("loading"))
 
         state.errorMessage != null -> ErrorContent(
-            message = state.errorMessage ?: stringResource(R.string.error),
+            message = state.errorMessage,
             onRetry = onRetry,
-            modifier = Modifier.padding(contentPadding)
+            modifier = Modifier
+                .padding(contentPadding)
+                .testTag("error")
         )
 
         state.detail == null -> ErrorContent(
             message = stringResource(R.string.no_data),
             onRetry = onRetry,
-            modifier = Modifier.padding(contentPadding)
+            modifier = Modifier
+                .padding(contentPadding)
+                .testTag("no_data")
         )
 
         else -> {
@@ -131,7 +138,10 @@ internal fun MovieDetailScreenContent(
                 Spacer(Modifier.height(12.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     detail.genres.take(5).forEach { g ->
-                        AssistChip(onClick = {}, label = { Text(g.name) })
+                        AssistChip(modifier = Modifier.testTag("genre_${g.id}"),
+                            onClick = {},
+                            label = { Text(g.name) }
+                        )
                     }
                 }
 
@@ -156,11 +166,14 @@ internal fun MovieDetailScreenContent(
                 Spacer(Modifier.height(16.dp))
                 val imdbId = detail.imdbId
                 if (!imdbId.isNullOrBlank()) {
-                    Button(onClick = { onOpenImdb(imdbId) }) {
+                    Button(modifier = Modifier.testTag("open_imdb"),
+                        onClick = { onOpenImdb(imdbId) }) {
                         Text(stringResource(R.string.open_imdb))
                     }
                 } else {
-                    Text(stringResource(R.string.imdb_link_unavailable), style = MaterialTheme.typography.bodySmall)
+                    Text(modifier = Modifier.testTag("imdb_link_unavailable"),
+                        text = stringResource(R.string.imdb_link_unavailable),
+                        style = MaterialTheme.typography.bodySmall)
                 }
             }
         }

@@ -23,12 +23,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sila.amro.R
 import com.sila.amro.domain.model.Genre
 import com.sila.amro.domain.model.SortField
@@ -42,7 +43,7 @@ fun MovieListScreen(
     onMovieClick: (Int) -> Unit,
     viewModel: MovieListViewModel = hiltViewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     MovieListScreenContent(
         contentPadding = contentPadding,
@@ -74,6 +75,7 @@ private fun ControlsRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             AssistChip(
+                modifier = Modifier.testTag("genre_all"),
                 onClick = { onSelectGenre(null) },
                 label = { Text(stringResource(R.string.all)) },
                 colors = AssistChipDefaults.assistChipColors(
@@ -83,6 +85,7 @@ private fun ControlsRow(
             )
             genres.forEach { genre ->
                 AssistChip(
+                    modifier = Modifier.testTag("genre_${genre.id}"),
                     onClick = { onSelectGenre(genre.id) },
                     label = { Text(genre.name) },
                     colors = AssistChipDefaults.assistChipColors(
@@ -100,7 +103,7 @@ private fun ControlsRow(
             SortChip(stringResource(R.string.title), sortField == SortField.TITLE) { onSelectSortField(SortField.TITLE) }
             SortChip(stringResource(R.string.release), sortField == SortField.RELEASE_DATE) { onSelectSortField(SortField.RELEASE_DATE) }
 
-            IconButton(onClick = onToggleSortOrder) {
+            IconButton(modifier = Modifier.testTag("sort_order"), onClick = onToggleSortOrder) {
                 Icon(
                     imageVector = if (sortOrder == SortOrder.DESC) Icons.Filled.ArrowDownward else Icons.Filled.ArrowUpward,
                     contentDescription = "Toggle sort order"
@@ -113,6 +116,7 @@ private fun ControlsRow(
 @Composable
 private fun SortChip(text: String, selected: Boolean, onClick: () -> Unit) {
     AssistChip(
+        modifier = Modifier.testTag("sort_${text.lowercase()}"),
         onClick = onClick,
         label = { Text(text) },
         colors = AssistChipDefaults.assistChipColors(
@@ -136,7 +140,7 @@ internal fun MovieListScreenContent(
     when {
         state.isLoading -> LoadingContent(modifier = Modifier.padding(contentPadding))
         state.errorMessage != null -> ErrorContent(
-            message = state.errorMessage ?: "Error",
+            message = state.errorMessage,
             onRetry = onRetry,
             modifier = Modifier.padding(contentPadding)
         )
@@ -158,15 +162,20 @@ internal fun MovieListScreenContent(
                 )
 
                 if (state.visibleMovies.isEmpty()) {
-                    Column(modifier = Modifier.padding(24.dp)) {
-                        Text("No movies match your filters.", style = MaterialTheme.typography.bodyLarge)
+                    Column(modifier = Modifier
+                        .padding(24.dp)
+                        .testTag("no_movies_match_filter")) {
+                        Text(stringResource(R.string.no_movies_match_filter), style = MaterialTheme.typography.bodyLarge)
                         Spacer(Modifier.height(8.dp))
-                        OutlinedButton(onClick = { onSelectGenre(null) }) {
-                            Text("Clear filters")
+                        OutlinedButton(onClick = { onSelectGenre(null) },
+                            modifier = Modifier.testTag("clear_filters")) {
+                            Text(stringResource(R.string.clear_filters))
                         }
                     }
                 } else {
-                    LazyColumn {
+                    LazyColumn(
+                        modifier = Modifier.testTag("movie_list")
+                    ) {
                         items(state.visibleMovies, key = { it.id }) { movie ->
                             MovieRow(
                                 movie = movie,

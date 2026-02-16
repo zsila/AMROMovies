@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
@@ -51,9 +52,7 @@ class MovieListScreenContentTest {
 
         composeRule.onNodeWithText("Network error").assertExists()
 
-        // IMPORTANT: Adjust this to your ErrorContent button text
-        // e.g. "Retry" / "Try again"
-        composeRule.onNodeWithText("Retry", ignoreCase = true).performClick()
+        composeRule.onNodeWithTag("retry_button").performClick()
 
         assertEquals(1, retryCalls)
     }
@@ -84,8 +83,8 @@ class MovieListScreenContentTest {
             )
         }
 
-        composeRule.onNodeWithText("No movies match your filters.").assertExists()
-        composeRule.onNodeWithText("Clear filters").performClick()
+        composeRule.onNodeWithTag("no_movies_match_filter").assertExists()
+        composeRule.onNodeWithTag("clear_filters").performClick()
 
         assertEquals(listOf<Int?>(null), genreCalls)
     }
@@ -117,11 +116,8 @@ class MovieListScreenContentTest {
             )
         }
 
-        // These labels come from string resources in your UI.
-        // If your actual strings differ, update them.
-        composeRule.onNodeWithText("Title", ignoreCase = true).performClick()
-        composeRule.onNodeWithText("Release", ignoreCase = true).performClick()
-
+        composeRule.onNodeWithTag("sort_title").performClick()
+        composeRule.onNodeWithTag("sort_release").performClick()
         composeRule.onNodeWithContentDescription("Toggle sort order").performClick()
 
         assertEquals(listOf(SortField.TITLE, SortField.RELEASE_DATE), sortCalls)
@@ -157,12 +153,9 @@ class MovieListScreenContentTest {
             )
         }
 
-        // Tap "Action" chip -> should send 28
-        composeRule.onNodeWithText("Action").performClick()
 
-        // Tap "All" chip -> should send null
-        // If your localized string isn't literally "All", adjust this.
-        composeRule.onNodeWithText("All", ignoreCase = true).performClick()
+        composeRule.onNodeWithTag("genre_28").performClick()
+        composeRule.onNodeWithTag("genre_all").performClick()
 
         assertEquals(listOf(28, null), genreCalls)
     }
@@ -171,15 +164,9 @@ class MovieListScreenContentTest {
     fun clickingMovie_callsOnMovieClick_withMovieId() {
         var clickedId: Int? = null
 
-        // NOTE: This test requires that MovieRow exposes something clickable that we can find:
-        // - either the movie title text (recommended), OR
-        // - a testTag like "movie_row_${movie.id}".
-        //
-        // If MovieRow does NOT show title text, add a testTag in MovieRow.
         val movieA = Movie(
             id = 101,
             title = "Movie A"
-            // fill other required fields in your Movie data class if any
         )
 
         val state = MovieListUiState(
@@ -204,11 +191,7 @@ class MovieListScreenContentTest {
             )
         }
 
-        // Option A: click by visible title text (works only if MovieRow displays it)
-        composeRule.onNodeWithText("Movie A").performClick()
-
-        // Option B (recommended): if you add Modifier.testTag("movie_row_${movie.id}") in MovieRow:
-        // composeRule.onNodeWithTag("movie_row_101").performClick()
+        composeRule.onNodeWithTag("movie_item_101").performClick()
 
         assertEquals(101, clickedId)
     }

@@ -38,11 +38,8 @@ class MovieDetailScreenContentTest {
             )
         }
 
-        // Prefer a testTag in LoadingContent for reliable testing.
-        // If you add .testTag("loading") in LoadingContent:
-        // composeRule.onNodeWithTag("loading").assertExists()
-        //
-        // Otherwise assert by a visible text in your LoadingContent if it has any.
+        composeRule.onNodeWithTag("loading").assertExists()
+
     }
 
     @Test
@@ -51,7 +48,7 @@ class MovieDetailScreenContentTest {
 
         val state = MovieDetailUiState(
             isLoading = false,
-            errorMessage = "Boom",
+            errorMessage = "error",
             detail = null
         )
 
@@ -65,10 +62,9 @@ class MovieDetailScreenContentTest {
             )
         }
 
-        composeRule.onNodeWithText("Boom").assertExists()
+        composeRule.onNodeWithText("error").assertExists()
 
-        // Change this to your ErrorContent button label (e.g. "Retry")
-        composeRule.onNodeWithText("Retry", ignoreCase = true).performClick()
+        composeRule.onNodeWithTag("retry_button").performClick()
 
         assertEquals(1, retryCalls)
     }
@@ -93,10 +89,9 @@ class MovieDetailScreenContentTest {
             )
         }
 
-        // If stringResource(R.string.no_data) is e.g. "No data"
-        composeRule.onNodeWithText("No data", ignoreCase = true).assertExists()
+        composeRule.onNodeWithTag("no_data").assertExists()
 
-        composeRule.onNodeWithText("Retry", ignoreCase = true).performClick()
+        composeRule.onNodeWithTag("retry_button").performClick()
         assertEquals(1, retryCalls)
     }
 
@@ -178,10 +173,8 @@ class MovieDetailScreenContentTest {
             )
         }
 
-        // This button label is from R.string.open_imdb
-        // If the text differs, adjust accordingly.
-        composeRule.onNodeWithText("Open IMDb", ignoreCase = true).assertExists()
-        composeRule.onNodeWithText("Open IMDb", ignoreCase = true).performClick()
+        composeRule.onNodeWithTag("open_imdb").assertExists()
+        composeRule.onNodeWithTag("open_imdb").performClick()
 
         assertEquals("tt0816692", openedImdb)
     }
@@ -221,7 +214,7 @@ class MovieDetailScreenContentTest {
             )
         }
 
-        // Label from R.string.imdb_link_unavailable
-        composeRule.onNodeWithText("IMDb link unavailable.", ignoreCase = true).assertExists()
+
+        composeRule.onNodeWithTag("imdb_link_unavailable").assertExists()
     }
 }
