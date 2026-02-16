@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -23,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -44,10 +47,17 @@ fun MovieListScreen(
     viewModel: MovieListViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(state.sort, state.selectedGenreId) {
+        listState.scrollToItem(0)
+    }
+
 
     MovieListScreenContent(
         contentPadding = contentPadding,
         state = state,
+        listState = listState,
         onMovieClick = onMovieClick,
         onRetry = viewModel::reload,
         onSelectGenre = viewModel::setGenre,
@@ -131,6 +141,7 @@ private fun SortChip(text: String, selected: Boolean, onClick: () -> Unit) {
 internal fun MovieListScreenContent(
     contentPadding: PaddingValues,
     state: MovieListUiState,
+    listState: LazyListState = rememberLazyListState(),
     onMovieClick: (Int) -> Unit,
     onRetry: () -> Unit,
     onSelectGenre: (Int?) -> Unit,
@@ -174,6 +185,7 @@ internal fun MovieListScreenContent(
                     }
                 } else {
                     LazyColumn(
+                        state = listState,
                         modifier = Modifier.testTag("movie_list")
                     ) {
                         items(state.visibleMovies, key = { it.id }) { movie ->
