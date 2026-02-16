@@ -11,6 +11,7 @@ import com.sila.amro.presentation.movieList.MovieListViewModel
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertNull
+import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -64,6 +65,24 @@ class MovieListViewModelTest {
         assertEquals(listOf(2, 1), state.visibleMovies.map { it.id })
 
     }
+
+
+    @Test
+    fun `reload success emits loading then success`() = runTest {
+        val repo = FakeMovieRepository()
+
+        val vm = makeViewModel(repo)
+
+        advanceUntilIdle()
+
+        val state = vm.state.value
+
+        assertFalse(state.isLoading)
+        assertNull(state.errorMessage)
+        assertTrue(state.allMovies.isNotEmpty())
+
+    }
+
 
     @Test
     fun `setGenre filters visibleMovies`() = runTest {
