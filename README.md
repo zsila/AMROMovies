@@ -135,7 +135,11 @@ TMDB_API_KEY=YOUR_API_KEY (paste just the key, wihout a " at the start/end of th
 
 Run unit tests:
 
-  ./gradlew test
+    ./gradlew test 
+
+Run UI tests:
+  
+    ./gradlew connectedAndroidTest
 
 ---
 
