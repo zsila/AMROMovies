@@ -1,6 +1,9 @@
 package com.sila.amro.di
 
 import com.sila.amro.BuildConfig
+import com.sila.amro.data.network.TmdbApi
+import com.sila.amro.data.repo.TmdbMovieRepository
+import com.sila.amro.domain.repo.MovieRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -60,5 +63,13 @@ class NetworkModule {
             .addInterceptor(logging)
             .build()
     }
+
+    @Provides @Singleton
+    fun provideTmdbApi(retrofit: Retrofit): TmdbApi =
+        retrofit.create(TmdbApi::class.java)
+
+    @Provides @Singleton
+    fun provideMovieRepository(api: TmdbApi): MovieRepository =
+        TmdbMovieRepository(api)
 
 }

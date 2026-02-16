@@ -3,16 +3,16 @@ package com.sila.amro.domain.model
 data class MovieDetail(
     val id: Int,
     val title: String,
-    val tagline: String?,
-    val posterPath: String?,
-    val genres: List<Genre>,
-    val overview: String?,
-    val voteAverage: Double,
-    val voteCount: Int,
-    val budget: Long,
-    val revenue: Long,
-    val status: String?,
-    val imdbId: String?,
-    val runtimeMinutes: Int?,
-    val releaseDate: String?
+    val tagline: String? = null,
+    val posterPath: String? = null,
+    val genres: List<Genre> = emptyList(),
+    val overview: String? = null,
+    val voteAverage: Double = 0.0,
+    val voteCount: Int = 0,
+    val budget: Long = 0,
+    val revenue: Long = 0,
+    val status: String? = null,
+    val imdbId: String? = null,
+    val runtimeMinutes: Int? = null,
+    val releaseDate: String? = null
 )
