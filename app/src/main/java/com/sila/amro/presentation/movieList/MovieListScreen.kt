@@ -28,7 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.sila.amro.R
 import com.sila.amro.domain.model.Genre
 import com.sila.amro.domain.model.SortField
@@ -44,52 +44,15 @@ fun MovieListScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
-    when {
-        state.isLoading -> LoadingContent(modifier = Modifier.padding(contentPadding))
-        state.errorMessage != null -> ErrorContent(
-            message = state.errorMessage ?: "Error",
-            onRetry = viewModel::reload,
-            modifier = Modifier.padding(contentPadding)
-        )
-        else -> {
-            val genreMap: Map<Int, Genre> = state.genres.associateBy { it.id }
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(contentPadding)
-            ) {
-                ControlsRow(
-                    genres = state.genres,
-                    selectedGenreId = state.selectedGenreId,
-                    sortField = state.sort.field,
-                    sortOrder = state.sort.order,
-                    onSelectGenre = viewModel::setGenre,
-                    onSelectSortField = viewModel::setSort,
-                    onToggleSortOrder = viewModel::toggleSortOrder
-                )
-
-                if (state.visibleMovies.isEmpty()) {
-                    Column(modifier = Modifier.padding(24.dp)) {
-                        Text("No movies match your filters.", style = MaterialTheme.typography.bodyLarge)
-                        Spacer(Modifier.height(8.dp))
-                        OutlinedButton(onClick = { viewModel.setGenre(null) }) {
-                            Text("Clear filters")
-                        }
-                    }
-                } else {
-                    LazyColumn {
-                        items(state.visibleMovies, key = { it.id }) { movie ->
-                            MovieRow(
-                                movie = movie,
-                                genreMap = genreMap,
-                                onClick = { onMovieClick(movie.id) }
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
+    MovieListScreenContent(
+        contentPadding = contentPadding,
+        state = state,
+        onMovieClick = onMovieClick,
+        onRetry = viewModel::reload,
+        onSelectGenre = viewModel::setGenre,
+        onSelectSortField = viewModel::setSort,
+        onToggleSortOrder = viewModel::toggleSortOrder
+    )
 }
 
 @Composable
@@ -157,4 +120,63 @@ private fun SortChip(text: String, selected: Boolean, onClick: () -> Unit) {
             else MaterialTheme.colorScheme.surfaceVariant
         )
     )
+}
+
+
+@Composable
+internal fun MovieListScreenContent(
+    contentPadding: PaddingValues,
+    state: MovieListUiState,
+    onMovieClick: (Int) -> Unit,
+    onRetry: () -> Unit,
+    onSelectGenre: (Int?) -> Unit,
+    onSelectSortField: (SortField) -> Unit,
+    onToggleSortOrder: () -> Unit
+) {
+    when {
+        state.isLoading -> LoadingContent(modifier = Modifier.padding(contentPadding))
+        state.errorMessage != null -> ErrorContent(
+            message = state.errorMessage ?: "Error",
+            onRetry = onRetry,
+            modifier = Modifier.padding(contentPadding)
+        )
+        else -> {
+            val genreMap: Map<Int, Genre> = state.genres.associateBy { it.id }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(contentPadding)
+            ) {
+                ControlsRow(
+                    genres = state.genres,
+                    selectedGenreId = state.selectedGenreId,
+                    sortField = state.sort.field,
+                    sortOrder = state.sort.order,
+                    onSelectGenre = onSelectGenre,
+                    onSelectSortField = onSelectSortField,
+                    onToggleSortOrder = onToggleSortOrder
+                )
+
+                if (state.visibleMovies.isEmpty()) {
+                    Column(modifier = Modifier.padding(24.dp)) {
+                        Text("No movies match your filters.", style = MaterialTheme.typography.bodyLarge)
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedButton(onClick = { onSelectGenre(null) }) {
+                            Text("Clear filters")
+                        }
+                    }
+                } else {
+                    LazyColumn {
+                        items(state.visibleMovies, key = { it.id }) { movie ->
+                            MovieRow(
+                                movie = movie,
+                                genreMap = genreMap,
+                                onClick = { onMovieClick(movie.id) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

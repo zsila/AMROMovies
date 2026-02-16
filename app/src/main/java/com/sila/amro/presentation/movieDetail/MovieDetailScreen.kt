@@ -13,7 +13,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -25,9 +24,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.sila.amro.BuildConfig
 import com.sila.amro.R
@@ -43,22 +43,62 @@ fun MovieDetailScreen(
     viewModel: MovieDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val ctx = LocalContext.current
 
+    MovieDetailScreenContent(
+        contentPadding = contentPadding,
+        state = state,
+        onBack = onBack,
+        onRetry = viewModel::reload,
+        onOpenImdb = { imdbId ->
+            val url = "https://www.imdb.com/title/$imdbId/"
+            ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        }
+    )
+
+}
+
+@Composable
+private fun KeyValue(key: String, value: String) {
+    Row(modifier = Modifier.padding(vertical = 4.dp)) {
+        Text(text = key, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+        Text(text = value, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+private fun money(amount: Long): String {
+    if (amount <= 0L) return "—"
+    val nf = NumberFormat.getCurrencyInstance()
+    nf.maximumFractionDigits = 0
+    return nf.format(amount)
+}
+
+
+@Composable
+internal fun MovieDetailScreenContent(
+    contentPadding: PaddingValues,
+    state: MovieDetailUiState,
+    onBack: () -> Unit,
+    onRetry: () -> Unit,
+    onOpenImdb: (String) -> Unit
+) {
     when {
         state.isLoading -> LoadingContent(modifier = Modifier.padding(contentPadding))
+
         state.errorMessage != null -> ErrorContent(
             message = state.errorMessage ?: stringResource(R.string.error),
-            onRetry = viewModel::reload,
+            onRetry = onRetry,
             modifier = Modifier.padding(contentPadding)
         )
+
         state.detail == null -> ErrorContent(
             message = stringResource(R.string.no_data),
-            onRetry = viewModel::reload,
+            onRetry = onRetry,
             modifier = Modifier.padding(contentPadding)
         )
+
         else -> {
-            val detail = state.detail!!
-            val ctx = LocalContext.current
+            val detail = state.detail
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -67,9 +107,13 @@ fun MovieDetailScreen(
                     .padding(16.dp)
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        modifier = Modifier.testTag("back"),
+                        onClick = onBack
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
+
                     Column(modifier = Modifier.padding(top = 10.dp)) {
                         Text(detail.title, style = MaterialTheme.typography.headlineSmall)
                         detail.tagline?.takeIf { it.isNotBlank() }?.let {
@@ -112,12 +156,9 @@ fun MovieDetailScreen(
                 Spacer(Modifier.height(16.dp))
                 val imdbId = detail.imdbId
                 if (!imdbId.isNullOrBlank()) {
-                    Button(
-                        onClick = {
-                            val url = "https://www.imdb.com/title/$imdbId/"
-                            ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-                        }
-                    ) { Text(stringResource(R.string.open_imdb)) }
+                    Button(onClick = { onOpenImdb(imdbId) }) {
+                        Text(stringResource(R.string.open_imdb))
+                    }
                 } else {
                     Text(stringResource(R.string.imdb_link_unavailable), style = MaterialTheme.typography.bodySmall)
                 }
@@ -126,17 +167,3 @@ fun MovieDetailScreen(
     }
 }
 
-@Composable
-private fun KeyValue(key: String, value: String) {
-    Row(modifier = Modifier.padding(vertical = 4.dp)) {
-        Text(text = key, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
-        Text(text = value, style = MaterialTheme.typography.bodyMedium)
-    }
-}
-
-private fun money(amount: Long): String {
-    if (amount <= 0L) return "—"
-    val nf = NumberFormat.getCurrencyInstance()
-    nf.maximumFractionDigits = 0
-    return nf.format(amount)
-}

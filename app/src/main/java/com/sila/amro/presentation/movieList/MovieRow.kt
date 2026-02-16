@@ -14,9 +14,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.sila.amro.BuildConfig
+import com.sila.amro.R
 import com.sila.amro.domain.model.Genre
 import com.sila.amro.domain.model.Movie
 
@@ -29,6 +32,7 @@ fun MovieRow(
 ) {
     Row(
         modifier = modifier
+            .testTag("movie_item_${movie.id}")
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 12.dp),
@@ -49,7 +53,7 @@ fun MovieRow(
             )
             movie.releaseDate?.takeIf { it.isNotBlank() }?.let {
                 Spacer(Modifier.height(4.dp))
-                Text(text = "Release: $it", style = MaterialTheme.typography.bodySmall)
+                Text(text = "${stringResource(R.string.release)}: $it", style = MaterialTheme.typography.bodySmall)
             }
         }
     }
